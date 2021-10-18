@@ -6,6 +6,8 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Order;
 use App\Models\User;
+use App\Models\Product;
+use Illuminate\Support\Facades\Http;
 
 class Orders extends Component
 {
@@ -13,24 +15,29 @@ class Orders extends Component
 
 	protected $paginationTheme = 'bootstrap';
     public $selected_id, $keyWord, $user_id, $customer_name, $customer_email, $customer_mobile, $product_id, $status, $price;
+    public $user_name, $product_name, $url_payment, $buttonUrlPay;
     public $updateMode = false;
 
     public function render()
     {
+       
+
 		$keyWord = '%'.$this->keyWord .'%';
         return view('livewire.orders.view', [
-            'orders' => Order::latest()
-						->orWhere('user_id', 'LIKE', $keyWord)
-						->orWhere('customer_name', 'LIKE', $keyWord)
-						->orWhere('customer_email', 'LIKE', $keyWord)
-						->orWhere('customer_mobile', 'LIKE', $keyWord)
-						->orWhere('product_id', 'LIKE', $keyWord)
-                        ->orWhere('price', 'LIKE', $keyWord)
-						->orWhere('status', 'LIKE', $keyWord)
+            'orders' => Order::select('orders.*', 'users.name As user_name','products.name As product_name')
+                        ->join('products', 'products.id', '=', 'orders.product_id')   
+                        ->join('users', 'users.id', '=', 'orders.user_id')                     
+						->orWhere('orders.user_id', 'LIKE', $keyWord)
+						->orWhere('orders.customer_name', 'LIKE', $keyWord)
+						->orWhere('orders.customer_email', 'LIKE', $keyWord)
+						->orWhere('orders.customer_mobile', 'LIKE', $keyWord)
+						->orWhere('orders.product_id', 'LIKE', $keyWord)
+                        ->orWhere('orders.price', 'LIKE', $keyWord)
+						->orWhere('orders.status', 'LIKE', $keyWord)
 						->paginate(10),
         ]);
     }
-	
+
     public function cancel()
     {
         $this->resetInput();
@@ -125,5 +132,104 @@ class Orders extends Component
         }
     }
 
+
+    public function payrmentOrder($id)
+    {
+        $buttonUrlPay=true;
+
+        $record = Order::select('orders.*', 'users.name As user_name','products.name As product_name' ,'requests.url_payment As url_payment')
+        ->join('requests', 'requests.order_id', '=', 'orders.id') 
+        ->join('products', 'products.id', '=', 'orders.product_id')   
+        ->join('users', 'users.id', '=', 'orders.user_id')         
+        ->where('orders.id',$id)
+        ->first();
+
+        $statusOrder=$record->status;
+
+        $serviceOrder=$this->getRequestInformationPayment($id);
+        $statusServiceOrder= $serviceOrder['status']['status'];
+
+        if( $statusOrder<>$statusServiceOrder){
+            $orderUpdate= Order::find($id);
+            $orderUpdate->update([ 
+			'status' => $statusServiceOrder
+            ]);
+        }
+
+        if($statusServiceOrder=="APPROVED"){
+            $buttonUrlPay=false;
+        }
+
+        $this->selected_id = $id; 
+		$this->user_id = $record-> user_id;
+        $this->user_name = $record-> user_name;
+		$this->customer_name = $record-> customer_name;
+		$this->customer_email = $record-> customer_email;
+		$this->customer_mobile = $record-> customer_mobile;
+		$this->product_id = $record-> product_id;
+        $this->product_name = $record-> product_name;
+        $this->price = $record-> price;
+		$this->status =  $statusServiceOrder;
+        $this->url_payment = $record-> url_payment;
+        $this->buttonUrlPay = $buttonUrlPay;
+        
+		
+        $this->updateMode = true;
+    }
+
+    public static function generate(string $login, string $tranKey): array
+    {
+        $nonce = random_bytes(16);
+        $seed = date('c');
+        $digest = base64_encode(hash('sha256', $nonce . $seed . $tranKey, true));
+        return [
+            'login' => $login,
+            'tranKey' => $digest,
+            'nonce' => base64_encode($nonce),
+            'seed' => $seed,
+        ];
+    }
+
+    public function getRequestInformationPayment($idOrder){
+
+        $order = Order::select('orders.*', 'requests.*')
+        ->join('requests', 'requests.order_id', '=', 'orders.id') 
+        ->where('orders.id',$idOrder)
+        ->first();
+
+        $requestId=$order->requestId;
+        $reference=$order->reference;
+        $total=$order->price;
+        $expiration=$order->expiration;
+        
+        $login= config('app.loginPay');//"6dd490faf9cb87a9862245da41170ff2";
+        $secretKey=config('app.secretKeyPay');//"024h1IlD";
+        $returnUrl=config('app.returnUrl');
+        $ipAddress=config('app.ipAddress');
+
+        $dataConexion= $this->generate($login,$secretKey);
+
+       $url='https://dev.placetopay.com/redirection/api/session/'.$requestId;
+        $response = Http::post($url, [
+            "auth" => $dataConexion,
+            "payment" => [
+                            "reference" =>  $reference,
+                            "description" => "Pago básico",
+                            "amount"=> [
+                                "currency"=> "COP",
+                                "total"=> $total
+                            ],
+                            ],
+            "expiration"=>  $expiration,
+            "returnUrl"=>   $returnUrl,
+            "ipAddress"=>   $ipAddress,
+            "userAgent"=>   "PlacetoPay Sandbox"
+        ]);
+
+        return $response->json();
+    }
+
+    
     
 }
+

@@ -36,15 +36,13 @@
 					@auth()
                     <ul class="navbar-nav mr-auto">
 						<!--Nav Bar Hooks - Do not delete!!-->
-                        @if (Auth::user()->isAdmin())
                             <li class="nav-item">
                                 <a href="{{ url('/orders') }}" class="nav-link"><i class="fab fa-laravel text-info"></i> Orders</a> 
                             </li>
-                        @else
 						<li class="nav-item">
                             <a href="{{ url('/products') }}" class="nav-link"><i class="fab fa-laravel text-info"></i> Products</a> 
                         </li>
-                        @endif
+                       
                     </ul>
 					@endauth()
 					

@@ -29,6 +29,8 @@
 						@include('livewire.products.create')
 						@include('livewire.products.update')
 						@include('livewire.products.createOrder')
+						
+		
 				<div class="table-responsive">
 					<table class="table table-bordered table-sm">
 						<thead class="thead">
@@ -67,7 +69,8 @@
 											Actions
 											</button>
 											<div class="dropdown-menu dropdown-menu-right">
-											<a data-toggle="modal" data-target="#OrderModal" class="dropdown-item" wire:click="createOrder({{$row->id}})"><i class="fa fa-edit"></i> Addtion Order  </a>							 											
+											<a data-toggle="modal" data-target="#OrderModal" class="dropdown-item" wire:click="createOrder({{$row->id}})"><i class="fa fa-edit"></i> Addtion Order  </a>
+											
 											</div>
 										</div>
 									@endif

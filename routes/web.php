@@ -21,15 +21,7 @@ Route::get('/', function () {
 //Route::get('/products/index',[ProductController::class,'index'])->name('products.index');
 
 Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
-   // return view('dashboard');
-    if(Auth::user()->isAdmin()){
-        echo "Es Admin";
-        
-    }else{
-       echo "Es cliente";
-    }
     return view('dashboard');
-   
 })->name('dashboard');
 
 
@@ -40,9 +32,9 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 
 Route::middleware('auth')->group( callback: function () {
-   // Route::get('/products/index',[ProductController::class,'index'])->name('products.index');
     Route::view('products', 'livewire.products.index')->middleware('auth');
 	Route::view('orders', 'livewire.orders.index')->middleware('auth');
-   // Route::get('createCustomerOrder/{id}',[Orders::class,'index'])->name('createCustomerOrder');
- });
+    //Route::post(uri:'payment'. action:'livewire.orders.pay')->name(name:'payment');
+    Route::post('transactions/showstatus',[TransactionController::class,'showstatus'])->name('transactions.showstatus');
+});
 	//Route::view('products', 'livewire.products.index')->middleware('auth');

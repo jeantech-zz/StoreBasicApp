@@ -7,6 +7,9 @@ use Livewire\WithPagination;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\Order;
+use App\Models\Request;
+use Illuminate\Support\Facades\Http;
+
 
 class Products extends Component
 {
@@ -15,6 +18,7 @@ class Products extends Component
 	protected $paginationTheme = 'bootstrap';
     //public $selected_id, $keyWord, $name, $description, $price, $image;
     public $selected_id, $keyWord, $name, $description, $price, $image, $user_id, $user_name, $customer_name, $customer_email, $customer_mobile, $product_id,$product_name, $status;
+    public $order_id, $url_app, $url_payment, $respons;
     public $updateMode = false;
 
     public function render()
@@ -139,6 +143,81 @@ class Products extends Component
         $this->status = null;
     }
 
+    public static function generate(string $login, string $tranKey): array
+    {
+        $nonce = random_bytes(16);
+        $seed = date('c');
+        $digest = base64_encode(hash('sha256', $nonce . $seed . $tranKey, true));
+        return [
+            'login' => $login,
+            'tranKey' => $digest,
+            'nonce' => base64_encode($nonce),
+            'seed' => $seed,
+        ];
+    }
+
+    public function AuthPayment($expiration, $reference, $total ){
+        
+        $login= config('app.loginPay');//"6dd490faf9cb87a9862245da41170ff2";
+        $secretKey=config('app.secretKeyPay');//"024h1IlD";
+        $returnUrl=config('app.returnUrl');
+        $ipAddress=config('app.ipAddress');
+
+        $dataConexion= $this->generate($login,$secretKey);
+
+        $response = Http::post('https://dev.placetopay.com/redirection/api/session', [
+            "auth" => $dataConexion,
+            "payment" => [
+                            "reference" =>  $reference,
+                            "description" => "Pago básico",
+                            "amount"=> [
+                                "currency"=> "COP",
+                                "total"=> $total
+                            ],
+                            ],
+            "expiration"=>  $expiration, 
+            "returnUrl"=>   $returnUrl,
+            "ipAddress"=>   $ipAddress,
+            "userAgent"=>   "PlacetoPay Sandbox"
+        ]);
+
+        return $response->json();
+    }
+
+    public function createRequestsPayment($orderId, $expiration, $reference, $total ){
+
+        $returnUrl=config('app.returnUrl');
+        $response= $this->AuthPayment($expiration, $reference, $total);
+        
+        $message=$response['status']['message'];
+
+     
+        if($response['status']['status']=="OK"){
+            $processUrl=$response['processUrl'];
+            $requestId=$response['requestId'];
+
+            Request::create([ 
+                'order_id' => intval($orderId),
+                'url_app'	=> $returnUrl,
+                'url_payment'	=> $processUrl,
+                'response' => $message,
+                'requestId' => $requestId,
+                'expiration' => $expiration,
+                'reference' => $reference,
+            ]);
+        }else{
+            Request::create([ 
+                'order_id' => intval($orderId),
+                'url_app'	=> $returnUrl,
+                'url_payment'	=> "",
+                'response' =>  $message,
+                'requestId' => "",
+                'expiration' => "",
+                'reference' => "",
+            ]);
+        }
+    }
+
     public function storeOrder()
     {
         $this->validate([
@@ -149,7 +228,8 @@ class Products extends Component
 		'status' => 'required',
         ]);
 
-        Order::create([ 
+       
+       $Order= Order::create([ 
 			'user_id' => $this-> user_id,
 			'customer_name' => $this-> customer_name,
 			'customer_email' => $this-> customer_email,
@@ -158,10 +238,18 @@ class Products extends Component
             'price' => $this-> price,
 			'status' => $this-> status
         ]);
-        
+
+        $orderId= $Order->id;
+        $now = date("YmdHms");
+        $expiration=date("c",strtotime($now."+ 1 days"));
+        $reference=$orderId.'-'.$now ;
+        $total=$this-> price;
+
+        $this->createRequestsPayment($orderId, $expiration, $reference, $total );
         $this->resetInputOrder();
 		$this->emit('closeModal');
 		session()->flash('message', 'Order Successfully created.');
     }
 
+    
 }

@@ -233,4 +233,10 @@ return [
 
     ],
 
+    'loginPay' => env('LOGIN_PAY', '6dd490faf9cb87a9862245da41170ff2'),
+    'secretKeyPay' => env('SECRET_KEY_PAY', '024h1IlD'),
+    'returnUrl' => env('RETURN_URL', 'http://localhost:8000/orders'),
+    'ipAddress' => env('IP_ADDRESS', '127.0.0.1'),
+
+
 ];
