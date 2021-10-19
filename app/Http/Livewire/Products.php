@@ -3,12 +3,12 @@
 namespace App\Http\Livewire;
 
 use Livewire\Component;
-use Livewire\WithPagination;
-use App\Models\Product;
-use App\Models\User;
-use App\Models\Order;
-use App\Models\Request;
 use Illuminate\Support\Facades\Http;
+use App\Models\Order;
+use App\Models\Product;
+use App\Models\Request;
+use App\Models\User;
+use Livewire\WithPagination;
 
 
 class Products extends Component
@@ -16,9 +16,8 @@ class Products extends Component
     use WithPagination;
 
 	protected $paginationTheme = 'bootstrap';
-    //public $selected_id, $keyWord, $name, $description, $price, $image;
     public $selected_id, $keyWord, $name, $description, $price, $image, $user_id, $user_name, $customer_name, $customer_email, $customer_mobile, $product_id,$product_name, $status;
-    public $order_id, $url_app, $url_payment, $respons;
+    public $order_id, $url_app, $url_payment, $respons, $disabled;
     public $updateMode = false;
 
     public function render()
@@ -129,6 +128,7 @@ class Products extends Component
         $this->product_name = $datoProduct->name;
         $this->price = $datoProduct->price;
 		$this->status ='CREATED';
+        $this->disabled=true;
 
     }
 

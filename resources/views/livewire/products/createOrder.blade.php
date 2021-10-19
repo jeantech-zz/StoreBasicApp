@@ -12,34 +12,35 @@
                 <form>
 					<input type="hidden" wire:model="selected_id">
             <div class="form-group">
-                <label for="user_id"></label>
-                <input wire:model="user_name" type="text" class="form-control" id="user_name" placeholder="User Name">@error('user_id') <span class="error text-danger">{{ $message }}</span> @enderror
+             <label for="user_id"></label>
+                <input wire:model="user_name" type="text" class="form-control" id="user_name" placeholder="User Name" @if($disabled) disabled='disabled' @endif>
+                @error('user_id') <span class="error text-danger">{{ $message }}</span> @enderror
             </div>
             <input type="hidden" wire:model="user_id">
             <div class="form-group">
                 <label for="customer_name"></label>
-                <input wire:model="customer_name" type="text" class="form-control" id="customer_name" placeholder="Customer Name">@error('customer_name') <span class="error text-danger">{{ $message }}</span> @enderror
+                <input wire:model="customer_name" type="text" class="form-control" id="customer_name" placeholder="Customer Name" @if($disabled) disabled='disabled' @endif>@error('customer_name') <span class="error text-danger">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label for="customer_email"></label>
-                <input wire:model="customer_email" type="text" class="form-control" id="customer_email" placeholder="Customer Email">@error('customer_email') <span class="error text-danger">{{ $message }}</span> @enderror
+                <input wire:model="customer_email" type="text" class="form-control" id="customer_email" placeholder="Customer Email" @if($disabled) disabled='disabled' @endif>@error('customer_email') <span class="error text-danger">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label for="customer_mobile"></label>
-                <input wire:model="customer_mobile" type="text" class="form-control" id="customer_mobile" placeholder="Customer Mobile">@error('customer_mobile') <span class="error text-danger">{{ $message }}</span> @enderror
+                <input wire:model="customer_mobile" type="text" class="form-control" id="customer_mobile" placeholder="Customer Mobile" >@error('customer_mobile') <span class="error text-danger">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label for="product_id"></label>
-                <input wire:model="product_name" type="text" class="form-control" id="product_name" placeholder="Product Id">@error('product_id') <span class="error text-danger">{{ $message }}</span> @enderror
+                <input wire:model="product_name" type="text" class="form-control" id="product_name" placeholder="Product Id" @if($disabled) disabled='disabled' @endif>@error('product_id') <span class="error text-danger">{{ $message }}</span> @enderror
             </div>
             <input type="hidden" wire:model="product_id">
             <div class="form-group">
                 <label for="status"></label>
-                <input wire:model="status" type="text" class="form-control" id="status" placeholder="Status">@error('status') <span class="error text-danger">{{ $message }}</span> @enderror
+                <input wire:model="status" type="text" class="form-control" id="status" placeholder="Status" @if($disabled) disabled='disabled' @endif>@error('status') <span class="error text-danger">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label for="price"></label>
-                <input wire:model="price" type="text" class="form-control" id="price" placeholder="Status">@error('price') <span class="error text-danger">{{ $message }}</span> @enderror
+                <input wire:model="price" type="text" class="form-control" id="price" placeholder="Status" @if($disabled) disabled='disabled' @endif>@error('price') <span class="error text-danger">{{ $message }}</span> @enderror
             </div>
             
                 </form>

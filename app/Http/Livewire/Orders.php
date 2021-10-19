@@ -3,11 +3,12 @@
 namespace App\Http\Livewire;
 
 use Livewire\Component;
-use Livewire\WithPagination;
+use Illuminate\Support\Facades\Http;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\Product;
-use Illuminate\Support\Facades\Http;
+
+use Livewire\WithPagination;
 
 class Orders extends Component
 {
@@ -15,25 +16,26 @@ class Orders extends Component
 
 	protected $paginationTheme = 'bootstrap';
     public $selected_id, $keyWord, $user_id, $customer_name, $customer_email, $customer_mobile, $product_id, $status, $price;
-    public $user_name, $product_name, $url_payment, $buttonUrlPay;
+    public $user_name, $product_name, $url_payment, $buttonUrlPay, $disabled;
     public $updateMode = false;
 
     public function render()
     {
        
+        $userId=auth()->id();
 
 		$keyWord = '%'.$this->keyWord .'%';
         return view('livewire.orders.view', [
             'orders' => Order::select('orders.*', 'users.name As user_name','products.name As product_name')
                         ->join('products', 'products.id', '=', 'orders.product_id')   
-                        ->join('users', 'users.id', '=', 'orders.user_id')                     
-						->orWhere('orders.user_id', 'LIKE', $keyWord)
-						->orWhere('orders.customer_name', 'LIKE', $keyWord)
-						->orWhere('orders.customer_email', 'LIKE', $keyWord)
-						->orWhere('orders.customer_mobile', 'LIKE', $keyWord)
-						->orWhere('orders.product_id', 'LIKE', $keyWord)
-                        ->orWhere('orders.price', 'LIKE', $keyWord)
-						->orWhere('orders.status', 'LIKE', $keyWord)
+                        ->join('users', 'users.id', '=', 'orders.user_id')   
+                        ->where ('orders.user_id',  $userId)            
+						->where('orders.customer_name', 'LIKE', $keyWord)
+						->where('orders.customer_email', 'LIKE', $keyWord)
+						->where('orders.customer_mobile', 'LIKE', $keyWord)
+						->where('orders.product_id', 'LIKE', $keyWord)
+                        ->where('orders.price', 'LIKE', $keyWord)
+						->where('orders.status', 'LIKE', $keyWord)
 						->paginate(10),
         ]);
     }
@@ -172,6 +174,7 @@ class Orders extends Component
 		$this->status =  $statusServiceOrder;
         $this->url_payment = $record-> url_payment;
         $this->buttonUrlPay = $buttonUrlPay;
+        $this->disabled=true;
         
 		
         $this->updateMode = true;
