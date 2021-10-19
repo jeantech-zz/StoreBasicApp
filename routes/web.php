@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Livewire\Orders;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,6 +18,19 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
 Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard');
+
+
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+
+
+Route::middleware('auth')->group( callback: function () {
+    Route::view('products', 'livewire.products.index')->middleware('auth');
+	Route::view('orders', 'livewire.orders.index')->middleware('auth');
+});

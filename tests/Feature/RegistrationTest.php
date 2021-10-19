@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Fortify\Features;
 use Laravel\Jetstream\Jetstream;
 use Tests\TestCase;
+use database\seeders\RoleSeeder;
 
 class RegistrationTest extends TestCase
 {
@@ -36,6 +37,10 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register()
     {
+        $this->seed();
+
+        $this->seed(RoleSeeder::class);
+
         if (! Features::enabled(Features::registration())) {
             return $this->markTestSkipped('Registration support is not enabled.');
         }
